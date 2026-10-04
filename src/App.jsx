@@ -1,96 +1,67 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useForm } from "react-hook-form"
+import { fieldsScheme } from "./validation";
 import styles from "./App.module.css";
-import { getErrors } from "./validation";
 
 export const App = () => {
-	const [formData, setFormData] = useState({
-		email: "",
-		password: "",
-		repeatPassword: "",
-	});
+	const {
+		register,
+		handleSubmit,
+		formState: { errors, isValid },
+	} = useForm({
+		resolver: yupResolver(fieldsScheme),
+		defaultValues: {
+			email: '',
+			password: '',
+			repeatPassword: ''
+		},
+		mode: "onChange",
+	})
+
+	const onSubmit = (formData) => {
+		console.log(formData);
+	};
 
 	const submitButtonRef = useRef(null);
 
-	const onSubmit = (event) => {
-		event.preventDefault();
-
-		if (!isFormValid) return;
-
-		console.log({
-			email,
-			password,
-			repeatPassword,
-		});
-	};
-
-	const { email, password, repeatPassword } = formData;
-	const validationErrors = getErrors(formData);
-	const isFormValid = Object.values(validationErrors).every(
-		(error) => error === null,
-	);
-
 	useEffect(() => {
-		if(isFormValid) {
+		if(isValid) {
 			submitButtonRef.current?.focus();
 		}
-	}, [isFormValid])
+	}, [isValid])
 
 	return (
 		<>
-			<form className={styles.form} onSubmit={onSubmit}>
-				{email && validationErrors.email && (
-					<div className={styles.error}>{validationErrors.email}</div>
+			<form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
+				{errors.email?.message && (
+					<div className={styles.error}>{errors.email?.message}</div>
 				)}
 				<input
 					className={styles.input}
 					type="email"
-					name="email"
-					value={email}
 					placeholder="Введите Ваш email"
-					onChange={({ target }) =>
-						setFormData({
-							...formData,
-							email: target.value,
-						})
-					}
+					{...register("email")}
 				/>
-				{password && validationErrors.password && (
-					<div className={styles.error}>
-						{validationErrors.password}
-					</div>
+				{errors.password?.message && (
+					<div className={styles.error}>{errors.password?.message}</div>
 				)}
 				<input
 					className={styles.input}
 					type="password"
-					name="password"
-					value={password}
 					placeholder="Введите Ваш пароль"
-					onChange={({ target }) =>
-						setFormData({
-							...formData,
-							password: target.value,
-						})
-					}
+					{...register("password")}
 				/>
-				{repeatPassword && validationErrors.repeatPassword && (
-					<div className={styles.error}>
-						{validationErrors.repeatPassword}
-					</div>
+				{errors.repeatPassword?.message && (
+					<div className={styles.error}>{errors.repeatPassword?.message}</div>
 				)}
 				<input
 					className={styles.input}
 					type="password"
-					name="repeatPassword"
-					value={repeatPassword}
 					placeholder="Введите повторно Ваш пароль"
-					onChange={({ target }) =>
-						setFormData({
-							...formData,
-							repeatPassword: target.value,
-						})
-					}
+					{...register("repeatPassword")}
 				/>
-				<button className={styles.button} type="submit" ref={submitButtonRef} disabled={!isFormValid}>
+				<button className={styles.button} type="submit" ref={submitButtonRef} disabled={!isValid}>
 					Зарегистрироваться
 				</button>
 			</form>

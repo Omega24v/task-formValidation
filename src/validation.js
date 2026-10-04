@@ -1,24 +1,19 @@
-export const getErrors = ({ email, password, repeatPassword }) => {
-	const passwordError = validatePassword(password);
-	const repeatPasswordError = validatePassword(repeatPassword);
+import * as yup from "yup"
 
-	return {
-		email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-			? "Поле должно быть правильного email формата"
-			: null,
-		password: passwordError,
-		repeatPassword:
-			repeatPasswordError ??
-			(password !== repeatPassword ? "Пароли не совпадают" : null),
-	};
-};
-
-export const validatePassword = (value) => {
-	if (!/^[a-zA-Z0-9@]*$/.test(value)) {
-		return "Поле может включать буквы, цифры и символ @";
-	} else if (value.length < 12 || value.length > 16) {
-		return "Поле должно быть от 12 до 16 символов";
-	}
-
-	return null;
-};
+export const fieldsScheme = yup.object()
+	.shape({
+		email: yup.string()
+			.email('Введите корректный email')
+			.required('Введите email'),
+		password: yup.string()
+			.matches(/^[a-zA-Z0-9@]*$/, 'Пароль может содержать только латинские буквы, цифры и @')
+			.max(16, 'Поле должно быть от 12 до 16 символов')
+			.min(12, 'Поле должно быть от 12 до 16 символов')
+			.required('Введите пароль'),
+			repeatPassword: yup.string()
+			.matches(/^[a-zA-Z0-9@]*$/, 'Пароль может содержать только латинские буквы, цифры и @')
+			.max(16, 'Поле должно быть от 12 до 16 символов')
+			.min(12, 'Поле должно быть от 12 до 16 символов')
+			.oneOf([yup.ref('password')], 'Пароли не совпадают')
+			.required('Повторите пароль'),
+	})
